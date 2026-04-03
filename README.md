@@ -1,3 +1,5 @@
+
+<img width="986" height="693" alt="image" src="https://github.com/user-attachments/assets/868f9f4c-813d-4cee-b9ff-6b62a526e52c" />
 # DiscFit - Features Overview
 
 **DiscFit** is a sophisticated, Electron-based desktop application designed to optimally organize and pack massive collections of loose files into manageable sets corresponding perfectly to the capacities of various optical media or bounded file bins. Below is a comprehensive list of all current capabilities within the application.
