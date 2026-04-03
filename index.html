@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DiscFit - Version 1.13 David Strencsev</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f0f0f0; color: #000; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+    .dark { background-color: #2d2d30; color: #f0f0f0; }
+    .menu { background-color: #e1e1e1; padding: 6px 8px; border-bottom: 1px solid #ccc; display:flex; align-items:center; }
+    .dark .menu { background-color: #3c3c3c; border-bottom: 1px solid #555; }
+    
+    .menu-dropdown-wrapper { position: relative; display: inline-block; margin-right: 12px; }
+    .menu-dropdown { display: none; position: absolute; top: 100%; left: 0; background: #f9f9f9; border: 1px solid #ccc; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 100; min-width: 140px; padding: 4px 0; }
+    .dark .menu-dropdown { background: #2d2d30; border-color: #555; }
+    .menu-dropdown.show { display: block; }
+    
+    .menu-item { padding: 6px 12px; cursor: pointer; color: #000; font-size: 0.95em; }
+    .menu-item:hover { background-color: #0078d4; color: #fff; }
+    .dark .menu-item { color: #f0f0f0; }
+    .dark .menu-item:hover { background-color: #005a9e; color: #fff; }
+    
+    .menu-divider { height: 1px; background-color: #ccc; margin: 4px 0; }
+    .dark .menu-divider { background-color: #555; }
+    
+    .menu a { text-decoration: none; color: inherit; padding: 5px; cursor: pointer; }
+    .menu a:hover { background-color: #ddd; }
+    .dark .menu a:hover { background-color: #555; }
+    .container { display: flex; flex: 1 1 0; min-height: 0; align-items: stretch; }
+    .left-panel { width: 370px; flex-shrink: 0; padding: 8px; border-right: 1px solid #ccc; background-color: #fafafa; display:flex; flex-direction:column; }
+    .dark .left-panel { background-color: #252526; border-right: 1px solid #3c3c3c; }
+    .right-panel { flex: 1 1 0; min-width: 0; padding: 8px; display: flex; flex-direction:column; }
+    .group { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; background-color: #fff; }
+    .dark .group { border: 1px solid #3c3c3c; background-color: #1e1e1e; }
+    select, input, button:not(.tab-btn):not(.window-controls button) { margin: 5px 0; padding: 5px; width: 100%; }
+    .list-view { border: 1px solid #999; overflow: auto; background-color: #fff; padding: 0; box-sizing: border-box; }
+    .left-panel .list-view { flex: 1 1 0; min-height: 100px; height: auto; }
+    .list-view.drag-over { border-color: #0078d4; background-color: #e7f3ff; }
+    .drop-placeholder { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; color: #666; font-style: italic; }
+    .file-row { display: flex; align-items: stretch; gap: 8px; padding: 6px; cursor: default; min-width: max-content; }
+    .file-row:hover { background-color: #e5f3ff; }
+    .dark .file-row:hover { background-color: #3b3b3b; }
+    .file-col-icon { flex: 0 0 32px; display: flex; justify-content: center; align-items: flex-start; padding-top: 4px; }
+    .file-col-details { flex: 1; display: flex; flex-direction: column; }
+    .file-col-name { color: #000; font-size: 13px; font-weight: normal; white-space: nowrap; padding-bottom: 2px; }
+    .file-col-artist { color: #888; font-size: 12px; white-space: nowrap; padding-bottom: 2px; }
+    .file-col-size { color: #888; font-size: 12px; }
+    .dark .file-col-name { color: #fff; }
+    .dark .file-col-artist, .dark .file-col-size { color: #aaa; }
+    .tabs { display: flex; border-bottom: 1px solid #ccc; margin-bottom: 4px; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; flex-shrink: 0; }
+    .tab-btn { background: #f0f0f0; border: 1px solid #ccc; border-bottom: none; padding: 6px 18px; cursor: pointer; margin-right: 2px; border-radius: 6px 6px 0 0; flex: 0 0 auto; white-space: nowrap; }
+    .tab-btn.active, .tab-btn:focus { background: #fff; font-weight: bold; outline: none; }
+    .dark .tab-btn { background: #2d2d30; border: 1px solid #3c3c3c; }
+    .dark .tab-btn.active, .dark .tab-btn:focus { background: #1e1e1e; }
+    .tab-content { padding: 0; display:flex; flex-direction:column; flex:1 1 0; min-height: 0; min-width: 0; }
+    .tab-pane { display: none; flex-direction:column; flex:1 1 0; min-height: 0; min-width: 0; }
+    .tab-pane.active { display: flex; }
+    .dark .list-view { background-color: #1e1e1e; border-color: #3c3c3c; color: #f0f0f0; }
+    .menu.header span { color: #000; }
+    .dark .menu.header { background-color: transparent; }
+    .dark .menu.header span { color: #fff; }
+    .tab-btn { color: #000; }
+    .tab-btn.active, .tab-btn:focus { color: #000; }
+    .dark .tab-btn { color: #fff; }
+    .dark .tab-btn.active, .dark .tab-btn:focus { color: #fff; }
+
+    .legend-target { font-weight: bold; background: white; padding: 0 4px; font-size: 0.9em; }
+    .dark .legend-target { background: #1e1e1e; color: #fff; border-color: #3c3c3c; }
+
+    /* Dark scrollbars */
+    .dark ::-webkit-scrollbar { width: 12px; height: 12px; }
+    .dark ::-webkit-scrollbar-track { background: #2b2b2b; }
+    .dark ::-webkit-scrollbar-thumb { background: #555; border-radius: 6px; border: 3px solid #2b2b2b; }
+    .dark ::-webkit-scrollbar-corner { background: #2b2b2b; }
+
+    /* Compact media controls */
+    .media-controls { display:flex; flex-direction:column; gap:6px; }
+    .media-controls select { width:100%; }
+    .media-controls .size-wrap { width:100%; }
+    .media-controls input[type="number"] { width:100%; box-sizing:border-box; }
+    /* Removed Set table layout, using Tile format instead */
+    .status { width: 100%; background-color: #e1e1e1; padding: 6px; border-top: 1px solid #ccc; font-size: 0.9em; box-sizing: border-box; }
+    .dark .status { background-color: #3c3c3c; border-top: 1px solid #555; }
+    .media-group { margin-top: 8px; }
+    .pack-btn { background: #0078d4; color: #fff; border: none; padding: 8px 12px; cursor: pointer; border-radius: 4px; font-size: 1.1em; }
+    .pack-btn:active { transform: translateY(1px); }
+    #fileList { flex: 1 1 auto; height: auto; overflow:auto; }
+    .results-section { display:flex; flex-direction:column; flex: 1 1 0; min-height: 0; min-width: 0; }
+    #bins { flex:1 1 0; min-height: 0; min-width: 0; overflow:hidden; display:flex; flex-direction:column; }
+    .right-panel .list-view { flex: 1 1 0; min-height: 0; min-width: 0; display:flex; flex-direction:column; }
+    .results-section h3 { margin-top: 0; margin-bottom: 6px; }
+    .title-left { display:flex; flex-direction:row; align-items:center; gap:10px; }
+    .title { font-weight:600; font-size:1.05em; }
+    .title-meta { font-size:0.85em; opacity:0.9; margin-left:6px; }
+  </style>
+</head>
+<body>
+  <div class="menu">
+    <div class="menu-dropdown-wrapper">
+      <a id="fileMenu">File</a>
+      <div id="fileDropdown" class="menu-dropdown">
+        <div class="menu-item" id="menu-new">New</div>
+        <div class="menu-divider"></div>
+        <div class="menu-item" id="menu-add-files">Add Files</div>
+        <div class="menu-item" id="menu-add-folder">Add Folder</div>
+        <div class="menu-divider"></div>
+        <div class="menu-item" id="menu-exit">Exit</div>
+      </div>
+    </div>
+    <div class="menu-dropdown-wrapper">
+      <a id="helpMenu">Help</a>
+      <div id="helpDropdown" class="menu-dropdown">
+        <div class="menu-item" id="menu-about-author">About Author</div>
+        <div class="menu-item" id="menu-about">About DiscFit</div>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="addFilesInput" multiple style="display:none;" />
+  <input type="file" id="addFolderInput" webkitdirectory style="display:none;" />
+
+  <div class="container">
+    <div class="left-panel">
+      <div id="fileList" class="list-view left-list">
+        <div class="drop-placeholder">Drag files or folders here</div>
+      </div>
+      
+      <fieldset class="group media-group">
+        <legend class="legend-target">Target Media</legend>
+        <div class="media-controls">
+          <label style="font-size: 0.9em; margin-bottom: 2px; display: block;">Media Type</label>
+          <select id="mediaType">
+            <option value="737280000">CD-R 700 MB</option>
+            <option value="749731840">CD-R 700 MB (overburn)</option>
+            <option value="4700372992">DVD+R</option>
+            <option value="4707319808">DVD-R</option>
+            <option value="8543666176">DVD-R DL</option>
+            <option value="8547991552">DVD+R DL</option>
+            <option value="25025314816">BD-R</option>
+            <option value="50050629632">BD-R DL</option>
+            <option value="custom">Custom</option>
+          </select>
+          <div class="size-wrap" style="margin-top: 6px;">
+            <label for="mediaSize" style="font-size: 0.9em;">Size (Bytes):</label>
+            <input type="number" id="mediaSize" value="737280000" />
+          </div>
+          <div class="pack-wrap" style="display:flex; justify-content:space-between; align-items:center; margin-top:12px;">
+            <label style="display:flex; align-items:center; gap:8px; font-size: 0.9em;">
+              <input type="checkbox" id="darkTheme"> Dark Mode
+            </label>
+            <button id="pack" class="pack-btn">Pack</button>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="right-panel">
+      <div class="results-section">
+        <div id="bins" class="list-view">
+          <div class="drop-placeholder">No sets — add files and click Pack</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="status">
+    <span id="statusText">Ready</span>
+  </div>
+
+  <link rel="icon" type="image/png" href="flac_icon.png">
+
+  <script src="renderer.js"></script>
+</body>
+</html>

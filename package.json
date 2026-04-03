@@ -1,0 +1,45 @@
+{
+  "name": "discfit-electron",
+  "version": "1.13.0",
+  "description": "Disc Fitting Tool for Optical Media - Electron Version",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "lint": "eslint ."
+  },
+  "author": "Converted from C#",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^25.0.0",
+    "electron-builder": "^24.0.0",
+    "eslint": "^8.0.0"
+  },
+  "build": {
+    "appId": "com.discfit.electron",
+    "productName": "DiscFit",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": ["nsis", "portable"]
+    },
+    "extraResources": [
+      {
+        "from": "mkisofs.exe",
+        "to": "mkisofs.exe",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "cygwin1.dll",
+        "to": "cygwin1.dll",
+        "filter": ["**/*"]
+      }
+    ],
+    "files": [
+      "**/*",
+      "!dist/**/*",
+      "!cdrtfe/**/*"
+    ]
+  }
+}
